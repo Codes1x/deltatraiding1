@@ -101,38 +101,47 @@ export const useTicketsStore = defineStore('tickets', {
             // console.log('found  this.activeTicket', this.activeTicket)
         },
         async newMessage(payload: { dialog_id: string, sender?: number, content: string, reply_to?: number }) {
-            ///api/v1/support/tickets/{id}/reply_message/
             try {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
                 if (!accessToken) {
-                    // throw new Error("Access token is missing");
                     return { success: false, error: "Access token is missing" };
                 }
-                const headers: Record<string, string> = {
-                    Authorization: `JWT ${accessToken}`,
+                // ПРЕДПОЛОЖЕНИЕ: ID пользователя (sender) должен быть доступен.
+                // Если payload.sender не предоставлен, нужно решить, как его получать (например, из auth store).
+                // Для демонстрации, если sender не пришел, вернем ошибку, так как он обязателен по схеме.
+                if (payload.sender === undefined || payload.sender === null) {
+                    console.error('newMessage error: sender is missing in payload');
+                    return { success: false, error: "Sender ID is missing" };
                 }
 
-                const formData = new FormData()
-                formData.append('dialog_id', payload.dialog_id)
-                // API ожидает sender как часть JWT, а не в теле запроса для /create_message/
-                // formData.append('sender', payload.sender ? payload.sender.toString() : '')
-                formData.append('content', payload.content)
-                if (payload.reply_to) { // Отправляем reply_to только если оно есть
-                    formData.append('reply_to', payload.reply_to.toString());
+                const headers: Record<string, string> = {
+                    Authorization: `JWT ${accessToken}`,
+                    'Content-Type': 'application/json', // Явно указываем Content-Type
                 }
+
+                const bodyPayload: any = {
+                    dialog_id: payload.dialog_id,
+                    sender: payload.sender, // Используем sender из payload
+                    content: payload.content,
+                }
+                if (payload.reply_to !== undefined && payload.reply_to !== null) { // Отправляем reply_to только если оно есть и не null
+                    bodyPayload.reply_to = payload.reply_to;
+                }
+                console.log('stores/tickets.ts - newMessage - JSON body:', JSON.stringify(bodyPayload, null, 2));
 
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/create_message/`
                 const response = (await $fetch(url, {
                     method: 'POST',
                     headers,
-                    body: formData,
+                    body: bodyPayload, // Отправляем объект напрямую
                 }))
 
                 return { success: true, data: response };
             } catch (error: any) {
-                console.error('newMessage error: ', error)
-                const errorMessage = error.data?.detail || error.message || 'Failed to send message';
+                console.error('newMessage store error raw: ', error);
+                console.error('newMessage store error.data: ', error.data);
+                const errorMessage = error.data?.detail || error.data?.message || error.message || 'Failed to send message';
                 return { success: false, error: errorMessage };
             }
         }
