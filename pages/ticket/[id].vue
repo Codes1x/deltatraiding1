@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { useWebAppViewport } from 'vue-tg'
 import { useTicketsStore } from '~/stores/tickets';
+import { useRoute } from 'vue-router';
+import { useTgWebAppStore } from '@/stores/tgWebApp';
 const appViewport = useWebAppViewport()
 const ticketsStore = useTicketsStore()
 const route = useRoute()
+const tgWebAppStore = useTgWebAppStore();
 // Получаем параметр id из route.params
 const ticketId = route.params.id;
 const activeTicketData = computed(() => ticketsStore.getActiveTicket)
@@ -15,6 +18,14 @@ const sendMessage = async () => {
     if (activeTicketData.value && newMessage.value.length > 0) {
         isLoadingSendMessage.value = true;
         try {
+            // Получаем ID текущего пользователя
+            const currentUser = tgWebAppStore.user;
+            if (!currentUser || currentUser.id === undefined || currentUser.id === null) {
+                alert('Error: Could not get current user ID. Please try again.');
+                isLoadingSendMessage.value = false;
+                return;
+            }
+
             const lastMessage = activeTicketData.value.messages_info
                 .filter(el => el.sender !== activeTicketData?.value?.client)
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -23,10 +34,12 @@ const sendMessage = async () => {
             const lastMessageId = lastMessage ? lastMessage.id : undefined;
 
             const payload = {
-                dialog_id: activeTicketData.value?.dialog_info.id,
+                dialog_id: activeTicketData.value.dialog_info.id,
                 content: newMessage.value,
+                sender: currentUser.id,
                 reply_to: lastMessageId
             }
+            console.log('pages/ticket/[id].vue - sendMessage payload:', JSON.stringify(payload, null, 2));
 
             const result = await ticketsStore.newMessage(payload)
             
