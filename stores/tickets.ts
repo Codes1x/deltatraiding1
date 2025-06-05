@@ -74,7 +74,7 @@ export const useTicketsStore = defineStore('tickets', {
                     message: payload.message,
                     ticket_type_id: String(payload.ticket_type_id),
                     subject: payload.subject,
-                    attachment: null
+                    attachment: ""
                 };
                 console.log('stores/tickets.ts - newTicket - JSON body:', JSON.stringify(bodyPayload, null, 2));
 
