@@ -67,7 +67,7 @@ export const useTicketsStore = defineStore('tickets', {
                     return { success: false, error: "Access token is missing" };
                 }
                 const headers: Record<string, string> = {
-                    Authorization: `JWT ${accessToken}`,\
+                    Authorization: `JWT ${accessToken}`,
                 }
 
                 const formData = new FormData()
@@ -110,7 +110,7 @@ export const useTicketsStore = defineStore('tickets', {
                     return { success: false, error: "Access token is missing" };
                 }
                 const headers: Record<string, string> = {
-                    Authorization: `JWT ${accessToken}`,\
+                    Authorization: `JWT ${accessToken}`,
                 }
 
                 const formData = new FormData()
