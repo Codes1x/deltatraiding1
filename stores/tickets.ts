@@ -136,6 +136,7 @@ export const useTicketsStore = defineStore('tickets', {
                     headers,
                     body: bodyPayload, // Отправляем объект напрямую
                 }))
+                console.log('stores/tickets.ts - newMessage - Server Response:', JSON.stringify(response, null, 2));
 
                 return { success: true, data: response };
             } catch (error: any) {
