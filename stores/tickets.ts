@@ -58,7 +58,7 @@ export const useTicketsStore = defineStore('tickets', {
                 return error
             }
         },
-        async newTicket(payload: { message: string, attachment?: string, ticket_type_id: string, subject: string }) {
+        async newTicket(payload: { message: string, ticket_type_id: string, subject: string }) {
             try {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
@@ -67,22 +67,21 @@ export const useTicketsStore = defineStore('tickets', {
                 }
                 const headers: Record<string, string> = {
                     Authorization: `JWT ${accessToken}`,
+                    'Content-Type': 'application/json',
                 }
 
-                const formData = new FormData()
-                formData.append('message', payload.message.toString())
-                formData.append('ticket_type_id', payload.ticket_type_id.toString())
-                formData.append('subject', payload.subject.toString())
-                // Убираем attachment, т.к. по схеме это отдельный эндпоинт
-                // if (payload.attachment) {
-                //     formData.append('attachment', payload.attachment);
-                // }
+                const bodyPayload = {
+                    message: payload.message,
+                    ticket_type_id: payload.ticket_type_id,
+                    subject: payload.subject
+                };
+                console.log('stores/tickets.ts - newTicket - JSON body:', JSON.stringify(bodyPayload, null, 2));
 
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
                 const response = (await $fetch(url, {
                     method: 'POST',
                     headers,
-                    body: formData,
+                    body: bodyPayload,
                 })) as INewTicketResponse
 
                 return { success: true, data: response };

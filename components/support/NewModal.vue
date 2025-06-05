@@ -24,6 +24,7 @@ const sendTicketMessage = async () => {
                 ticket_type_id: selectedItem.value.value,
                 subject: selectedItem.value.label
             }
+            console.log('NewModal.vue - payload before sending:', JSON.stringify(payload, null, 2));
             const result = await ticketsStore.newTicket(payload)
 
             if (result.success) {
