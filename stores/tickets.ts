@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { INewTicketResponse, ITicket, ITicketType } from '~/types/tickets';
+import type { INewTicketResponse, ITicket, ITicketType, IMessagesInfo } from '~/types/tickets';
 
 export const useTicketsStore = defineStore('tickets', {
     state: () => ({
@@ -75,22 +75,24 @@ export const useTicketsStore = defineStore('tickets', {
 
                 const headers: Record<string, string> = {
                     'Authorization': `JWT ${accessToken}`,
-                    'Content-Type': 'application/json',
                 };
 
-                const body = {
-                    subject: payload.subject,
-                    message: payload.message,
-                    ticket_type_id: Number(payload.ticket_type_id),
-                };
+                const formData = new FormData();
+                formData.append('subject', payload.subject);
+                formData.append('message', payload.message);
+                formData.append('ticket_type_id', payload.ticket_type_id);
 
-                console.log('stores/tickets.ts - newTicket - JSON body:', body);
+                if (payload.attachment) {
+                    formData.append('attachment', payload.attachment);
+                }
+
+                console.log('stores/tickets.ts - newTicket - sending with FormData');
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
 
                 const response: any = await $fetch(url, {
                     method: 'POST',
                     headers,
-                    body,
+                    body: formData,
                 });
 
                 return { success: true, data: response };
