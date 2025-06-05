@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount, defineEmits } from 'vue';
 import { useTicketsStore } from '~/stores/tickets';
-import { useWebAppViewport } from 'vue-tg'
 import type { ITicketType } from '~/types/tickets';
 
-const appViewport = useWebAppViewport()
 interface IOption { label: string, value: string }
 
 const ticketsStore = useTicketsStore()
@@ -65,20 +64,21 @@ const fetchData = async () => {
 // Функция корректировки отступа для input при появлении клавиатуры
 const adjustInputPadding = () => {
     const form = document.querySelector('.ticket__input') as HTMLElement;
-    if (form) {
-        form.style.paddingBottom = window.visualViewport?.height! < appViewport.viewportHeight.value ? "350px" : "0px";
+    if (form && window.Telegram?.WebApp?.viewportHeight) {
+        form.style.paddingBottom = window.visualViewport?.height! < window.Telegram.WebApp.viewportHeight ? "350px" : "0px";
     }
 };
 
 onMounted(() => {
     fetchData()
-    appViewport.onViewportChanged(adjustInputPadding);
+    window.Telegram?.WebApp?.onEvent('viewportChanged', adjustInputPadding);
     adjustInputPadding();
 })
 
 onBeforeUnmount(() => {
     const form = document.querySelector('.ticket__input') as HTMLElement;
     if (form) form.style.paddingBottom = "0px";
+    window.Telegram?.WebApp?.offEvent('viewportChanged', adjustInputPadding);
 });
 </script>
 
