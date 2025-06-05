@@ -63,7 +63,6 @@ export const useTicketsStore = defineStore('tickets', {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
                 if (!accessToken) {
-                    // throw new Error("Access token is missing");
                     return { success: false, error: "Access token is missing" };
                 }
                 const headers: Record<string, string> = {
@@ -74,9 +73,10 @@ export const useTicketsStore = defineStore('tickets', {
                 formData.append('message', payload.message.toString())
                 formData.append('ticket_type_id', payload.ticket_type_id.toString())
                 formData.append('subject', payload.subject.toString())
-                if (payload.attachment) {
-                    formData.append('attachment', payload.attachment);
-                }
+                // Убираем attachment, т.к. по схеме это отдельный эндпоинт
+                // if (payload.attachment) {
+                //     formData.append('attachment', payload.attachment);
+                // }
 
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
                 const response = (await $fetch(url, {
@@ -87,8 +87,9 @@ export const useTicketsStore = defineStore('tickets', {
 
                 return { success: true, data: response };
             } catch (error: any) {
-                console.error('newTicket error: ', error)
-                const errorMessage = error.data?.detail || error.message || 'Failed to create ticket';
+                console.error('newTicket store error raw: ', error);
+                console.error('newTicket store error.data: ', error.data);
+                const errorMessage = error.data?.detail || error.data?.message || error.message || 'Failed to create ticket';
                 return { success: false, error: errorMessage };
             }
         },
