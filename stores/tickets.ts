@@ -66,47 +66,39 @@ export const useTicketsStore = defineStore('tickets', {
         }) {
             console.log('stores/tickets.ts - newTicket payload:', payload);
 
-            const { subject, message, ticket_type_id, attachment } = payload;
-            const authStore = useAuthStore();
-            const user_id = authStore.user?.id;
-
-            if (!user_id) {
-                const errorMsg = 'User not authenticated';
-                console.error('stores/tickets.ts - newTicket error:', errorMsg);
-                return { success: false, error: errorMsg };
-            }
-
-            // The 'client' field is determined by the auth token on the backend.
-            // It should not be in the request body.
-            const body = {
-                subject,
-                message,
-                ticket_type_id: String(payload.ticket_type_id),
-            };
-
-            // We don't handle attachments for now in JSON mode.
-            // if (attachment) {
-            //   // how to handle attachment with application/json?
-            // }
-
-            console.log('stores/tickets.ts - newTicket - JSON body:', body);
-            
             try {
-                const response: any = await fetchWithAuth(
-                    '/api/v1/support/tickets/',
-                    {
-                        method: 'POST',
-                        body: JSON.stringify(body),
-                    }
-                );
+                const tgWebAppStore = useTgWebAppStore()
+                const accessToken = tgWebAppStore.accessToken
+                if (!accessToken) {
+                    return { success: false, error: "Access token is missing" };
+                }
+
+                const headers: Record<string, string> = {
+                    'Authorization': `JWT ${accessToken}`,
+                    'Content-Type': 'application/json',
+                };
+                
+                const body = {
+                    subject: payload.subject,
+                    message: payload.message,
+                    ticket_type_id: String(payload.ticket_type_id),
+                };
+
+                console.log('stores/tickets.ts - newTicket - JSON body:', body);
+                const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
+
+                const response: any = await $fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body,
+                });
 
                 return { success: true, data: response };
 
             } catch (error: any) {
                 console.error('stores/tickets.ts - newTicket error:', error);
-                // Attempt to parse the error response body
-                const errorBody = await error.response?._data;
-                const errorMessage = errorBody?.error || error.message || 'Failed to create ticket';
+                const errorBody = error.data;
+                const errorMessage = errorBody?.error || errorBody?.detail || error.message || 'Failed to create ticket';
                 return { success: false, error: errorMessage };
             }
         },
