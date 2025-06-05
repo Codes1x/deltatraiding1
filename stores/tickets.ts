@@ -135,8 +135,42 @@ export const useTicketsStore = defineStore('tickets', {
                     method: 'POST',
                     headers,
                     body: bodyPayload, // Отправляем объект напрямую
-                }))
+                })) as IMessagesInfo // Указываем, что ожидаем объект типа IMessagesInfo
                 console.log('stores/tickets.ts - newMessage - Server Response:', JSON.stringify(response, null, 2));
+
+                // Обновляем messages_info в активном тикете
+                if (this.activeTicket && this.activeTicket.id === payload.dialog_id) {
+                    if (!this.activeTicket.messages_info) {
+                        this.activeTicket.messages_info = [];
+                    }
+                    this.activeTicket.messages_info.push(response);
+                } else {
+                    console.warn(
+                        'stores/tickets.ts - newMessage - Active ticket ID (',
+                        this.activeTicket?.id,
+                        ') does not match payload.dialog_id (',
+                        payload.dialog_id,
+                        ') or activeTicket is not set. Message not pushed to activeTicket.messages_info directly.',
+                    );
+                }
+
+                // Также обновляем сообщение в общем списке тикетов this.tickets
+                const ticketInList = this.tickets.find(t => t.id === payload.dialog_id);
+                if (ticketInList) {
+                    if (!ticketInList.messages_info) {
+                        ticketInList.messages_info = [];
+                    }
+                    // Добавляем, только если сообщение с таким ID еще не существует (на всякий случай, если вдруг дублируется логика)
+                    if (!ticketInList.messages_info.some(m => m.id === response.id)) {
+                        ticketInList.messages_info.push(response);
+                    }
+                } else {
+                     console.warn(
+                        'stores/tickets.ts - newMessage - Ticket with ID (',
+                        payload.dialog_id,
+                        ') not found in this.tickets. Message not pushed to tickets list directly.',
+                    );
+                }
 
                 return { success: true, data: response };
             } catch (error: any) {

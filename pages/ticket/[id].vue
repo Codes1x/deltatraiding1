@@ -45,6 +45,7 @@ const sendMessage = async () => {
             
             if (result.success) {
                 newMessage.value = '';
+                console.log('Attempting to refresh ticket data after sending message...');
                 await fetchData();
             } else {
                 alert(`Error sending message: ${result.error || 'Failed to send message'}`);
@@ -60,6 +61,7 @@ const sendMessage = async () => {
 // get Ticket data
 const isDataLoaded = ref(false)
 const fetchData = async () => {
+    console.log('fetchData called for ticket ID:', ticketId);
     isDataLoaded.value = false
     try {
         if (ticketId) {
@@ -70,6 +72,7 @@ const fetchData = async () => {
         console.error('fetchData ticket', error)
     } finally {
         isDataLoaded.value = true
+        console.log('fetchData finished for ticket ID:', ticketId);
     }
 }
 
