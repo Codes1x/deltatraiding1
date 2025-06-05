@@ -77,11 +77,11 @@ export const useTicketsStore = defineStore('tickets', {
                     'Authorization': `JWT ${accessToken}`,
                     'Content-Type': 'application/json',
                 };
-                
+
                 const body = {
                     subject: payload.subject,
                     message: payload.message,
-                    ticket_type_id: String(payload.ticket_type_id),
+                    ticket_type_id: Number(payload.ticket_type_id),
                 };
 
                 console.log('stores/tickets.ts - newTicket - JSON body:', body);
@@ -175,7 +175,7 @@ export const useTicketsStore = defineStore('tickets', {
                         ticketInList.messages_info.push(response);
                     }
                 } else {
-                     console.warn(
+                    console.warn(
                         'stores/tickets.ts - newMessage - Ticket with dialog_id (',
                         payload.dialog_id,
                         ') not found in this.tickets. Message not pushed to tickets list directly.',
