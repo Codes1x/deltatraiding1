@@ -65,11 +65,15 @@ const fetchData = async () => {
     isDataLoaded.value = false
     try {
         if (ticketId) {
+            // Сначала обновляем весь список тикетов с сервера
+            await ticketsStore.fetchTickets(); 
+            // Затем устанавливаем активный тикет из обновленного списка
             const payload = { ticketId: ticketId.toString() }
             await ticketsStore.fetchActiveTickets(payload)
+            console.log('fetchData - activeTicketData from store after fetch:', JSON.stringify(activeTicketData.value, null, 2));
         }
     } catch (error) {
-        console.error('fetchData ticket', error)
+        console.error('fetchData ticket error:', error)
     } finally {
         isDataLoaded.value = true
         console.log('fetchData finished for ticket ID:', ticketId);
