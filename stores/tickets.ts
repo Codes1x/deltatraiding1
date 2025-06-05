@@ -75,32 +75,34 @@ export const useTicketsStore = defineStore('tickets', {
 
                 const headers: Record<string, string> = {
                     'Authorization': `JWT ${accessToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 };
 
-                const formData = new FormData();
-                formData.append('subject', payload.subject);
-                formData.append('message', payload.message);
-                formData.append('ticket_type_id', payload.ticket_type_id);
+                const body = {
+                    subject: payload.subject,
+                    message: payload.message,
+                    ticket_type_id: String(payload.ticket_type_id),
+                };
 
-                if (payload.attachment) {
-                    formData.append('attachment', payload.attachment);
-                }
-
-                console.log('stores/tickets.ts - newTicket - sending with FormData');
+                console.log('stores/tickets.ts - newTicket - JSON body:', body);
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
 
                 const response: any = await $fetch(url, {
                     method: 'POST',
                     headers,
-                    body: formData,
+                    body,
                 });
 
                 return { success: true, data: response };
 
             } catch (error: any) {
                 console.error('stores/tickets.ts - newTicket error:', error);
+                if (error.data) {
+                    console.error('stores/tickets.ts - newTicket error data:', JSON.stringify(error.data, null, 2));
+                }
                 const errorBody = error.data;
-                const errorMessage = errorBody?.error || errorBody?.detail || error.message || 'Failed to create ticket';
+                const errorMessage = (typeof errorBody === 'object' && errorBody !== null) ? JSON.stringify(errorBody) : (errorBody || error.message || 'Failed to create ticket');
                 return { success: false, error: errorMessage };
             }
         },
