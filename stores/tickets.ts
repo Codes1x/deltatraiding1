@@ -63,16 +63,20 @@ export const useTicketsStore = defineStore('tickets', {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
                 if (!accessToken) {
-                    throw new Error("Access token is missing");
+                    // throw new Error("Access token is missing");
+                    return { success: false, error: "Access token is missing" };
                 }
                 const headers: Record<string, string> = {
-                    Authorization: `JWT ${accessToken}`,
+                    Authorization: `JWT ${accessToken}`,\
                 }
 
                 const formData = new FormData()
                 formData.append('message', payload.message.toString())
                 formData.append('ticket_type_id', payload.ticket_type_id.toString())
                 formData.append('subject', payload.subject.toString())
+                if (payload.attachment) {
+                    formData.append('attachment', payload.attachment);
+                }
 
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
                 const response = (await $fetch(url, {
@@ -81,10 +85,11 @@ export const useTicketsStore = defineStore('tickets', {
                     body: formData,
                 })) as INewTicketResponse
 
-                return response
-            } catch (error) {
-                console.error('fetchTickets ', error)
-                return error
+                return { success: true, data: response };
+            } catch (error: any) {
+                console.error('newTicket error: ', error)
+                const errorMessage = error.data?.detail || error.message || 'Failed to create ticket';
+                return { success: false, error: errorMessage };
             }
         },
         async fetchActiveTickets(payload: { ticketId: string }) {
@@ -101,17 +106,21 @@ export const useTicketsStore = defineStore('tickets', {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
                 if (!accessToken) {
-                    throw new Error("Access token is missing");
+                    // throw new Error("Access token is missing");
+                    return { success: false, error: "Access token is missing" };
                 }
                 const headers: Record<string, string> = {
-                    Authorization: `JWT ${accessToken}`,
+                    Authorization: `JWT ${accessToken}`,\
                 }
 
                 const formData = new FormData()
                 formData.append('dialog_id', payload.dialog_id)
-                formData.append('sender', payload.sender ? payload.sender.toString() : '')
+                // API ожидает sender как часть JWT, а не в теле запроса для /create_message/
+                // formData.append('sender', payload.sender ? payload.sender.toString() : '')
                 formData.append('content', payload.content)
-                formData.append('reply_to', payload.reply_to ? payload.reply_to.toString() : '')
+                if (payload.reply_to) { // Отправляем reply_to только если оно есть
+                    formData.append('reply_to', payload.reply_to.toString());
+                }
 
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/create_message/`
                 const response = (await $fetch(url, {
@@ -120,10 +129,11 @@ export const useTicketsStore = defineStore('tickets', {
                     body: formData,
                 }))
 
-                return response
-            } catch (error) {
-                console.error('newMessage ', error)
-                return error
+                return { success: true, data: response };
+            } catch (error: any) {
+                console.error('newMessage error: ', error)
+                const errorMessage = error.data?.detail || error.message || 'Failed to send message';
+                return { success: false, error: errorMessage };
             }
         }
     },

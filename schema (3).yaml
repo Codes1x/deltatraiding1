@@ -1,0 +1,2766 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/callback-robots/:
+    post:
+      operationId: callback_robots_create
+      description: POST метод для обработки данных.
+      tags:
+      - callback-robots
+      responses:
+        '200':
+          description: No response body
+  /api/password_reset/:
+    post:
+      operationId: password_reset_create
+      description: |-
+        An Api View which provides a method to request a password reset token based on an e-mail address
+
+        Sends a signal reset_password_token_created when a reset token was created
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /api/password_reset/confirm/:
+    post:
+      operationId: password_reset_confirm_create
+      description: An Api View which provides a method to reset a password based on
+        a unique token
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /api/password_reset/validate_token/:
+    post:
+      operationId: password_reset_validate_token_create
+      description: An Api View which provides a method to verify that a token is valid
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetToken'
+          description: ''
+  /api/v1/auth/:
+    post:
+      operationId: authenticate_user
+      description: Эндпоинт для авторизации или регистрации пользователя через WebApp
+        Telegram.
+      summary: Аутентификация/регистрация пользователя через Telegram WebApp
+      parameters:
+      - in: query
+        name: data
+        schema:
+          type: string
+        description: Строка с необработанными данными, передаваемая из мини-приложения
+      tags:
+      - Пользователи
+      responses:
+        '200':
+          description: No response body
+        '201':
+          description: No response body
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/login/:
+    post:
+      operationId: v1_login_create
+      description: Эндпоинт позволяет аутентифицироваться в приложении
+      summary: Аутентификация в приложении
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                success: true
+                refresh: <refresh_token>
+                access: <access_token>
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+  /api/v1/logout/:
+    post:
+      operationId: v1_logout_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/categories-list/:
+    get:
+      operationId: v1_notifications_categories_list_list
+      description: Возвращает список всех существующих категорий уведомлений
+      summary: Получить список категорий уведомлений
+      tags:
+      - Уведомления
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationCategory'
+          description: ''
+  /api/v1/notifications/subscriptions/:
+    get:
+      operationId: v1_notifications_subscriptions_list
+      description: Возвращает список категорий уведомлений на которых подписан текущий
+        пользователь
+      summary: Получить список категорий уведомлений, на которые подписан пользователь
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationCategory'
+          description: ''
+  /api/v1/notifications/subscriptions/update_subscriptions/:
+    post:
+      operationId: v1_notifications_subscriptions_update_subscriptions_create
+      description: Обновляет подписки на указанные категории уведомлений
+      summary: Обновить подписки на категории уведомлений
+      tags:
+      - Уведомления
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  category_id:
+                    type: integer
+                    example: 1
+                  subscribed:
+                    type: boolean
+                    example: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                success: true
+          description: ''
+  /api/v1/payments/available-tokens/:
+    get:
+      operationId: v1_payments_available_tokens_retrieve
+      description: Этот эндпоинт возвращает список доступных токенов для каждого поддерживаемого
+        стандарта блокчейн
+      summary: Получить доступные токены для каждого стандарта
+      tags:
+      - Платежи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                standart1:
+                - token1
+                - token2
+                - '...'
+                standart2:
+                - token1
+                - token2
+                - '...'
+          description: ''
+  /api/v1/payments/buy-product/:
+    post:
+      operationId: v1_payments_buy_product_create
+      description: Этот эндпоинт позволяет выполнить покупку продукта
+      summary: Покупка продукта
+      parameters:
+      - in: query
+        name: pay_from_balance
+        schema:
+          type: boolean
+        description: Флаг, указывающий на необходимость списать деньги с баланса при
+          покупке продукта
+        required: true
+      - in: query
+        name: product_id
+        schema:
+          type: integer
+        description: ID продукта
+        required: true
+      tags:
+      - Продукты
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPurchase'
+          description: ''
+  /api/v1/payments/check-secret-code/:
+    get:
+      operationId: v1_payments_check_secret_code_retrieve
+      description: API для проверки, установлен ли SECRET_CODE. Возвращает True, если
+        код уже установлен, иначе False.
+      summary: Проверить наличие SECRET_CODE
+      tags:
+      - Вывод средств
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Response with a boolean indicating whether the code is set
+  /api/v1/payments/getbep20address/:
+    post:
+      operationId: v1_payments_getbep20address_create
+      description: Это представление для вызывающего пользователя возвращает криптоадрес
+        стандарта BEP20
+      summary: Получение криптоадреса стандарта BEP20 для пополнения баланса
+      tags:
+      - Платежи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCryptoAddressSuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCryptoAddressFailedResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCryptoAddressServerErrorResponse'
+          description: ''
+  /api/v1/payments/invoice-status/:
+    post:
+      operationId: v1_payments_invoice_status_create
+      description: Этот эндпоинт позволяет получить статус инвойса
+      summary: Получение статуса инвойса
+      parameters:
+      - in: query
+        name: invoice_id
+        schema:
+          type: integer
+        description: ID инвойса
+        required: true
+      tags:
+      - Инвойсы
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPurchase'
+          description: ''
+  /api/v1/payments/replenishment/:
+    post:
+      operationId: v1_payments_replenishment_create
+      description: Эта операция позволяет пользователю пополнить свой баланс. Создается
+        инвойс, который возвращается в ответе, вместе с данными для оплаты.
+      summary: Пополнение баланса
+      parameters:
+      - in: query
+        name: amount
+        schema:
+          type: number
+          format: double
+        description: Сумма пополнения
+      - in: query
+        name: token
+        schema:
+          type: string
+        description: Токен для пополненения
+        required: true
+      tags:
+      - Пополнение баланса
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPurchase'
+          description: ''
+  /api/v1/payments/set-secret-code/:
+    post:
+      operationId: v1_payments_set_secret_code_create
+      description: API для первичной установки SECRET_CODE для пользовательских аккаунтов.
+        Код через API может быть установлен только один раз.
+      summary: Установить SECRET_CODE
+      parameters:
+      - in: query
+        name: secret_code
+        schema:
+          type: integer
+        description: An integer between 4 and 8 characters long
+        required: true
+      tags:
+      - Вывод средств
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretCode'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SecretCode'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SecretCode'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Secret code has been successfully installed
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                description: Secret code has already been installed
+          description: ''
+  /api/v1/payments/transfer/:
+    post:
+      operationId: v1_payments_transfer_create
+      description: Это представление принимает идентификатор пользователя-получателя
+        `to_user` и сумму перевода `amount` и обрабатывает перевод средств
+      summary: Перевод средств между пользователями
+      parameters:
+      - in: query
+        name: amount
+        schema:
+          type: number
+          format: double
+        description: сумма перевода
+        required: true
+      - in: query
+        name: to_username
+        schema:
+          type: string
+        description: '`username` пользователя, которому совершается перевод средств'
+        required: true
+      tags:
+      - Платежи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferAPIView'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransferAPIView'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransferAPIView'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferSuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferFailedResponse'
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferServerErrorResponse'
+          description: ''
+  /api/v1/payments/withdrawal/:
+    get:
+      operationId: v1_payments_withdrawal_list
+      description: Возвращает список всех заявок на вывод средств, принадлежащих текущему
+        аутентифицированному пользователю.
+      summary: Получение списка заявок текущего пользователя
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Вывод средств
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWithdrawalResponseList'
+          description: ''
+    post:
+      operationId: v1_payments_withdrawal_create
+      description: Создаёт новую заявку на вывод средств с указанной суммой и платёжным
+        аккаунтом. Перед созданием проверяются правила вывода.
+      summary: Создание новой заявки на вывод
+      tags:
+      - Вывод средств
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WithdrawalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalRequest'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/v1/payments/withdrawal/{id}/:
+    get:
+      operationId: v1_payments_withdrawal_retrieve
+      description: Возвращает данные заявки на вывод средств по указанному идентификатору,
+        если эта заявка принадлежит текущему пользователю.
+      summary: Получение конкретной заявки на вывод (по ID)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Заявка на вывод.
+        required: true
+      tags:
+      - Вывод средств
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalResponse'
+          description: ''
+  /api/v1/products/:
+    get:
+      operationId: v1_products_list
+      description: Метод возвращает список всех доступных продуктов
+      summary: Получить список продуктов
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+        description: ID категории для фильтрации
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Поля сортировки (name, price)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Продукты
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+  /api/v1/products/{id}/:
+    get:
+      operationId: v1_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/products/{id}/product_detail/:
+    get:
+      operationId: v1_products_product_detail_retrieve
+      description: Метод возвращает детальную информацию о продукте
+      summary: Получить детальную информацию о продукте
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - Продукты
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: Детальная информация о продукте
+        '404':
+          content:
+            application/json:
+              schema:
+                detail: No product with this id was not found.
+          description: No product with this id was found.
+  /api/v1/purchases/:
+    get:
+      operationId: v1_purchases_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserProductPurchaseList'
+          description: ''
+    post:
+      operationId: v1_purchases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProductPurchase'
+          description: ''
+  /api/v1/purchases/{id}/:
+    get:
+      operationId: v1_purchases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Покупка пользователя.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProductPurchase'
+          description: ''
+    put:
+      operationId: v1_purchases_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Покупка пользователя.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProductPurchase'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProductPurchase'
+          description: ''
+    patch:
+      operationId: v1_purchases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Покупка пользователя.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProductPurchase'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProductPurchase'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProductPurchase'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProductPurchase'
+          description: ''
+    delete:
+      operationId: v1_purchases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Покупка пользователя.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/purchases/all_subscribes/:
+    get:
+      operationId: v1_purchases_all_subscribes_retrieve
+      description: Этот эндпоинт возвращает все активные подписки пользователя
+      summary: Получить все активные подписки пользователя
+      tags:
+      - Подписки
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserProductPurchaseList'
+          description: Активные подписки пользователя
+  /api/v1/purchases/non_configured_trading_systems/:
+    get:
+      operationId: v1_purchases_non_configured_trading_systems_retrieve
+      description: Этот эндпоинт возвращает все купленные, но не настроенные торговые
+        системы пользователя
+      summary: Получить все купленные, но не настроенные торговые системы
+      tags:
+      - Подписки
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserProductPurchaseList'
+          description: Купленные, но не настроенные торговые системы пользователя
+  /api/v1/referral/all_user_referrals/:
+    get:
+      operationId: v1_referral_all_user_referrals_retrieve
+      description: Получение списка рефералов пользователя с указанием уровней и их
+        балансов
+      parameters:
+      - in: query
+        name: max_level
+        schema:
+          type: integer
+        description: Максимальный уровень глубины отображения рефералов (по умолчанию
+          5)
+      tags:
+      - Реферальная программа
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferralHierarchy'
+          description: Список рефералов пользователя с указанием уровней и их балансов
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/referral/link/:
+    get:
+      operationId: v1_referral_link_retrieve
+      description: Метод возвращает персональную реферальную ссылку пользователя
+      summary: Получение персональной реферальной ссылки пользователя
+      tags:
+      - Реферальная программа
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralLinkResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/register/:
+    post:
+      operationId: v1_register_create
+      description: Эндпоинт позволяет зарегистрироваться в приложении через email
+      summary: Регистрация в приложении через email
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEmailRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserEmailRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserEmailRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                success: true
+                refresh: <refresh_token>
+                access: <access_token>
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+  /api/v1/robots/{robot_id}/delete/:
+    delete:
+      operationId: v1_robots_delete_destroy
+      description: Метод запрашивает удаление торгового робота пользователя
+      summary: Удаление торгового робота
+      parameters:
+      - in: path
+        name: robot_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Торговые роботы
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRobotResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/robots/{robot_id}/setup-status/:
+    get:
+      operationId: v1_robots_setup_status_retrieve
+      description: Метод запрашивает статус установки  торгового робота пользователя
+      summary: Получение статуса установки торгового робота
+      parameters:
+      - in: path
+        name: robot_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Торговые роботы
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupStatusRobotResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/robots/setting/:
+    post:
+      operationId: v1_robots_setting_create
+      description: Метод для настройки торгового робота пользователя
+      summary: Настройка торгового робота
+      parameters:
+      - in: query
+        name: account_num
+        schema:
+          type: integer
+        description: Номер торгового счета у брокера
+        required: true
+      - in: query
+        name: account_password
+        schema:
+          type: string
+        description: Пароль от торгового счета у брокера
+        required: true
+      - in: query
+        name: broker_id
+        schema:
+          type: integer
+        description: ID брокера
+        required: true
+      - in: query
+        name: broker_server_name
+        schema:
+          type: string
+        description: Название сервера брокера
+        required: true
+      - in: query
+        name: product_slug
+        schema:
+          type: string
+        description: product_slug торговой системы
+        required: true
+      - in: query
+        name: purchase_id
+        schema:
+          type: integer
+        description: ID покупки торговой системы
+        required: true
+      tags:
+      - Торговые роботы
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsRobotResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsRobotResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/robots/stats/:
+    get:
+      operationId: v1_robots_stats_retrieve
+      description: Метод возвращает статистику по всем роботам пользователя
+      summary: Получение статистики по всем роботам пользователя
+      tags:
+      - Торговые роботы
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsRobotResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+          description: ''
+  /api/v1/support/faq/:
+    get:
+      operationId: v1_support_faq_list
+      description: Возвращает список часто задаваемых вопросов (FAQ).
+      summary: Получение списка FAQ
+      tags:
+      - Support
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FrequentlyAskedQuestion'
+          description: ''
+  /api/v1/support/tickets/:
+    get:
+      operationId: v1_support_tickets_list
+      description: Получение списка заявок клиента.
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+          format: date-time
+        description: Фильтр по дате создания заявки.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Фильтр по статусу заявки.
+      tags:
+      - Support
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+          description: ''
+    post:
+      operationId: v1_support_tickets_create
+      description: Создание новой заявки для клиента.
+      tags:
+      - Support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateTicketRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTicket'
+          description: ''
+        '403':
+          description: Support officer are not allowed to create support requests.
+        '404':
+          description: Text error
+  /api/v1/support/tickets/{id}/attach_file/:
+    post:
+      operationId: v1_support_tickets_attach_file_create
+      description: Привязка файла к сообщению.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attachment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Attachment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Attachment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+          description: ''
+  /api/v1/support/tickets/{id}/cancel/:
+    post:
+      operationId: v1_support_tickets_cancel_create
+      description: Отмена заявки.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Support
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Заявка отменена
+  /api/v1/support/tickets/{id}/edit_message/:
+    post:
+      operationId: v1_support_tickets_edit_message_create
+      description: Редактирование сообщения.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EditMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EditMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditMessage'
+          description: ''
+  /api/v1/support/tickets/{id}/reply_message/:
+    post:
+      operationId: v1_support_tickets_reply_message_create
+      description: Ответ на сообщения в диалоге по заявке.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateMessage'
+          description: ''
+  /api/v1/support/tickets/create_message/:
+    post:
+      operationId: v1_support_tickets_create_message_create
+      description: Создание сообщения в диалоге по заявке.
+      tags:
+      - Support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateMessage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateMessage'
+          description: ''
+  /api/v1/support/tickets/types/:
+    get:
+      operationId: v1_support_tickets_types_list
+      description: Получение списка типов заявок.
+      tags:
+      - Support
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketType'
+          description: ''
+  /api/v1/token/refresh/:
+    post:
+      operationId: v1_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/user/balance/:
+    get:
+      operationId: v1_user_balance_retrieve
+      description: API для получения текущего баланса пользователя.
+      summary: Получить баланс пользователя
+      tags:
+      - Пользователи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Success
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Unauthorized
+          description: ''
+  /api/v1/user/impersonation/:
+    post:
+      operationId: v1_user_impersonation_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/referral-broker-link/:
+    get:
+      operationId: v1_user_referral_broker_link_retrieve
+      description: Эндпоинт позволяет аутентифицированному пользователю получить свою
+        реф ссылку брокера
+      summary: Получить реф ссылку брокера
+      tags:
+      - Пользователи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: v1_user_referral_broker_link_create
+      description: Эндпоинт позволяет аутентифицированному пользователю задать/изменить
+        свою персональную реферальную ссылку для брокера
+      summary: Изменить реф ссылку у брокера
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReferralBrokerLink'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateReferralBrokerLink'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateReferralBrokerLink'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: The referral link has been updated successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Authentication is required
+          description: ''
+  /api/v1/user/referrer-broker-link/:
+    get:
+      operationId: v1_user_referrer_broker_link_retrieve
+      description: Эндпоинт позволяет аутентифицированному пользователю получить  реф
+        ссылку брокера его реферера
+      summary: Получить реф ссылку брокера от реферера
+      tags:
+      - Пользователи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/user/transactions-history/:
+    get:
+      operationId: v1_user_transactions_history_list
+      description: API для получения всех пользовательских транзакций с возможностью
+        фильтрации по типу, статусу и дате транзакции.
+      summary: Получить историю транзакций пользователей
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date
+        description: Фильтрация по дате (после)
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date
+        description: Фильтрация по дате (до)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: transaction_status
+        schema:
+          type: string
+          enum:
+          - failed
+          - processing
+          - success
+        description: Фильтрация по статусу транзакции
+      - in: query
+        name: transaction_type
+        schema:
+          type: string
+          enum:
+          - commission
+          - purchase
+          - referral_fee
+          - replenishment
+          - transfer
+          - withdrawal
+        description: Фильтрация по типу транзакции
+      tags:
+      - Пользователи
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransactionUserAccountsHistoryList'
+          description: ''
+  /api/v1/user/update-email/:
+    post:
+      operationId: v1_user_update_email_create
+      description: Эндпоинт позволяет аутентифицированному пользователю изменить свой
+        email
+      summary: Изменить email
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateEmail'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: The email has been updated successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Authentication is required
+          description: ''
+  /api/v1/user/update-language/:
+    post:
+      operationId: v1_user_update_language_create
+      description: Эндпоинт позволяет аутентифицированному пользователю изменить свой
+        язык
+      summary: Изменить язык
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLanguage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateLanguage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateLanguage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: The language has been updated successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Authentication is required
+          description: ''
+  /api/v1/user/update-name/:
+    post:
+      operationId: v1_user_update_name_create
+      description: Эндпоинт позволяет аутентифицированному пользователю изменить своё
+        имя и/или фамилию.
+      summary: Изменить имя и/или фамилию
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateName'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateName'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateName'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: The data has been updated successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Authentication is required
+          description: ''
+  /api/v1/user/update-password/:
+    post:
+      operationId: v1_user_update_password_create
+      description: Эндпоинт позволяет аутентифицированному пользователю изменить свой
+        пароль
+      summary: Изменить пароль
+      tags:
+      - Пользователи
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: The password has been updated successfully
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Validation error
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                description: Authentication is required
+          description: ''
+components:
+  schemas:
+    AccountTypeEnum:
+      enum:
+      - main
+      - hold
+      - delta coin
+      type: string
+      description: |-
+        * `main` - Main
+        * `hold` - Hold
+        * `delta coin` - Delta coin
+    AdditionalFieldsEnum:
+      enum:
+      - 0
+      - 1
+      type: integer
+      description: |-
+        * `0` - Нет
+        * `1` - Продукт
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        attachment:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Date and time when the attach was added
+        dialog:
+          type: string
+          format: uuid
+          title: Диалог
+      required:
+      - created_at
+      - dialog
+      - id
+    CreateMessage:
+      type: object
+      properties:
+        dialog_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        sender:
+          type: integer
+          title: От кого
+        content:
+          type: string
+          title: Сообщение
+        reply_to:
+          type: integer
+          nullable: true
+      required:
+      - content
+      - dialog_id
+      - sender
+    CreateTicket:
+      type: object
+      properties:
+        ticket_type:
+          type: integer
+          nullable: true
+          title: Тип заявки
+        subject:
+          type: string
+          title: Тема заявки
+          maxLength: 255
+        client:
+          type: integer
+      required:
+      - client
+      - subject
+    CreateTicketRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        attachment:
+          type: string
+          format: uri
+        ticket_type_id:
+          type: string
+        subject:
+          type: string
+      required:
+      - message
+      - subject
+      - ticket_type_id
+    DeleteRobotResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    EditMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        content:
+          type: string
+          title: Сообщение
+      required:
+      - content
+      - id
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    FrequentlyAskedQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        pos:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Position
+        question:
+          type: string
+          maxLength: 300
+        answer:
+          type: string
+        slug:
+          type: string
+          maxLength: 50
+      required:
+      - answer
+      - id
+      - slug
+    GetCryptoAddressFailedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - success
+    GetCryptoAddressServerErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - success
+    GetCryptoAddressSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        address:
+          type: string
+      required:
+      - address
+      - success
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,8})?$
+          nullable: true
+        currency:
+          type: string
+          nullable: true
+          title: Валюта
+          maxLength: 4
+        extra:
+          nullable: true
+          title: Extra invoice data
+        address:
+          type: string
+          readOnly: true
+        qr_code:
+          type: string
+          readOnly: true
+        expiration_time:
+          type: number
+          format: double
+          readOnly: true
+        standart:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceStatusEnum'
+          title: Invoice status
+      required:
+      - address
+      - expiration_time
+      - id
+      - qr_code
+      - standart
+    InvoiceStatusEnum:
+      enum:
+      - WAIT_PAYMENT
+      - PAID
+      - PROCESSED
+      - CANCELED
+      - ERROR
+      type: string
+      description: |-
+        * `WAIT_PAYMENT` - Ожидает оплаты
+        * `PAID` - Оплачено
+        * `PROCESSED` - Processed
+        * `CANCELED` - Отменено
+        * `ERROR` - Ошибка
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    NotificationCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Имя
+          maxLength: 50
+      required:
+      - id
+      - name
+    PaginatedProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    PaginatedTransactionUserAccountsHistoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionUserAccountsHistory'
+    PaginatedUserProductPurchaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProductPurchase'
+    PaginatedWithdrawalResponseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WithdrawalResponse'
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+          title: Пароль
+        token:
+          type: string
+      required:
+      - password
+      - token
+    PatchedUserProductPurchase:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        product:
+          type: string
+          readOnly: true
+        invoice:
+          type: string
+          readOnly: true
+        paid_for:
+          type: boolean
+          title: Оплачено
+        expires_at:
+          type: string
+          format: date
+          nullable: true
+        is_configured:
+          type: string
+          readOnly: true
+    PriorityEnum:
+      enum:
+      - low
+      - med
+      - hgh
+      - vhg
+      type: string
+      description: |-
+        * `low` - Низкий
+        * `med` - Средний
+        * `hgh` - Высокий
+        * `vhg` - Очень высокий
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,8})?$
+          title: Цена
+        description:
+          type: string
+          title: Описание
+        product_payment_type:
+          allOf:
+          - $ref: '#/components/schemas/ProductPaymentTypeEnum'
+          title: Тип оплаты
+        duration:
+          type: string
+          readOnly: true
+        product_icon:
+          type: string
+          format: uri
+          nullable: true
+          title: Иконка продукта
+          description: Рекомендуемый размер 120x120
+        product_image:
+          type: string
+          format: uri
+          nullable: true
+          title: Картинка продукта
+          description: Рекомендуемый размер 318x318
+        enabled:
+          type: boolean
+          title: Доступен
+      required:
+      - category
+      - duration
+      - id
+      - name
+      - price
+    ProductCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          title: Заголовок
+          maxLength: 20
+        name:
+          type: string
+          title: Имя категории
+          maxLength: 50
+        description:
+          type: string
+          title: Описание
+      required:
+      - id
+      - name
+    ProductPaymentTypeEnum:
+      enum:
+      - Subscription
+      - One-time payment
+      type: string
+      description: |-
+        * `Subscription` - Подписка
+        * `One-time payment` - Единоразовая оплата
+    ProductPurchase:
+      type: object
+      properties:
+        invoice:
+          $ref: '#/components/schemas/Invoice'
+        product:
+          $ref: '#/components/schemas/Product'
+        address:
+          type: string
+        expiration_time:
+          type: integer
+          format: int64
+          readOnly: true
+        standart:
+          type: string
+        total_balance:
+          type: string
+      required:
+      - address
+      - expiration_time
+      - invoice
+      - product
+      - standart
+      - total_balance
+    Referral:
+      type: object
+      properties:
+        username:
+          type: string
+        full_name:
+          type: string
+          readOnly: true
+        invited_count:
+          type: string
+          readOnly: true
+        purchased_trading_systems:
+          type: string
+          readOnly: true
+      required:
+      - full_name
+      - invited_count
+      - purchased_trading_systems
+    ReferralHierarchy:
+      type: object
+      properties:
+        level:
+          type: string
+          readOnly: true
+        referrals:
+          $ref: '#/components/schemas/Referral'
+      required:
+      - level
+      - referrals
+    ReferralLinkResponse:
+      type: object
+      properties:
+        referral_link:
+          type: string
+      required:
+      - referral_link
+    ResetToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    SecretCode:
+      type: object
+      description: Сериализатор для проверки и валидации SECRET_CODE.
+      properties:
+        secret_code:
+          type: string
+          writeOnly: true
+      required:
+      - secret_code
+    SettingsRobotResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    SetupStatusRobotResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    StatsRobotResponse:
+      type: object
+      properties:
+        all_time:
+          type: object
+          additionalProperties:
+            type: string
+            format: decimal
+            pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default:
+            amount: '0.00'
+            percent: '0.00'
+        days_30:
+          type: object
+          additionalProperties:
+            type: string
+            format: decimal
+            pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default:
+            amount: '0.00'
+            percent: '0.00'
+        days_7:
+          type: object
+          additionalProperties:
+            type: string
+            format: decimal
+            pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default:
+            amount: '0.00'
+            percent: '0.00'
+        today:
+          type: object
+          additionalProperties:
+            type: string
+            format: decimal
+            pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          default:
+            amount: '0.00'
+            percent: '0.00'
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        dialog_info:
+          type: string
+          readOnly: true
+        messages_info:
+          type: string
+          readOnly: true
+        attachment_info:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          title: Тема заявки
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TicketStatusEnum'
+          title: Статус
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/PriorityEnum'
+          title: Приоритет
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ticket_type:
+          type: integer
+          nullable: true
+          title: Тип заявки
+        moderator:
+          type: integer
+          nullable: true
+          title: Модератор
+        client:
+          type: integer
+        technical_support_officer:
+          type: integer
+          nullable: true
+          title: Сотрудних поддержки
+        product:
+          type: integer
+          nullable: true
+          title: Связанный продукт
+      required:
+      - attachment_info
+      - client
+      - created_at
+      - dialog_info
+      - id
+      - messages_info
+      - subject
+      - updated_at
+    TicketStatusEnum:
+      enum:
+      - NEW
+      - CNL
+      - PRO
+      - A_S
+      - A_C
+      - CLS
+      - ACL
+      type: string
+      description: |-
+        * `NEW` - Новая заявка
+        * `CNL` - Отменена клиентом
+        * `PRO` - Заявка в работе
+        * `A_S` - Ответ поддержки
+        * `A_C` - Ответ клиента
+        * `CLS` - Закрыта
+        * `ACL` - Закрыта системой
+    TicketType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        color:
+          type: string
+          readOnly: true
+        additional_fields:
+          allOf:
+          - $ref: '#/components/schemas/AdditionalFieldsEnum'
+          minimum: 0
+          maximum: 2147483647
+        attachment_required:
+          type: boolean
+          title: Запрос вложения
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - color
+      - created_at
+      - id
+      - name
+      - updated_at
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TransactionStatusEnum:
+      enum:
+      - success
+      - failed
+      - processing
+      type: string
+      description: |-
+        * `success` - success
+        * `failed` - failed
+        * `processing` - processing
+    TransactionTypeEnum:
+      enum:
+      - replenishment
+      - transfer
+      - withdrawal
+      - purchase
+      - commission
+      - referral_fee
+      type: string
+      description: |-
+        * `replenishment` - replenishment
+        * `transfer` - transfer
+        * `withdrawal` - withdrawal
+        * `purchase` - purchase
+        * `commission` - comission
+        * `referral_fee` - referral fee
+    TransactionUserAccountsHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        amount:
+          type: string
+        description:
+          nullable: true
+        transaction_status:
+          $ref: '#/components/schemas/TransactionStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        from_account:
+          type: integer
+          nullable: true
+        to_account:
+          type: integer
+          nullable: true
+        invoice:
+          type: integer
+          nullable: true
+          title: Связанный счет
+        withdrawal_request:
+          type: integer
+          nullable: true
+          title: Связанная заявка на вывод
+      required:
+      - amount
+      - created_at
+      - id
+      - transaction_status
+      - transaction_type
+    TransferAPIView:
+      type: object
+      description: A sterilizer for processing a transfer request between users.
+      properties:
+        to_username:
+          type: string
+        amount:
+          type: string
+        secret_code:
+          type: integer
+      required:
+      - amount
+      - secret_code
+      - to_username
+    TransferFailedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - success
+    TransferServerErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - success
+    TransferSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - success
+    UnauthorizedError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    UpdateEmail:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          writeOnly: true
+      required:
+      - email
+    UpdateLanguage:
+      type: object
+      properties:
+        language:
+          type: string
+          writeOnly: true
+      required:
+      - language
+    UpdateName:
+      type: object
+      properties:
+        first_name:
+          type: string
+          description: Новое имя пользователя.
+          maxLength: 70
+        last_name:
+          type: string
+          description: Новая фамилия пользователя.
+          maxLength: 70
+    UpdatePassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+          writeOnly: true
+      required:
+      - new_password
+    UpdateReferralBrokerLink:
+      type: object
+      properties:
+        link:
+          type: string
+          writeOnly: true
+        email:
+          type: string
+          format: email
+      required:
+      - link
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 100
+        first_name:
+          type: string
+          title: Имя
+          maxLength: 70
+        last_name:
+          type: string
+          title: Фамилия
+          maxLength: 70
+      required:
+      - id
+      - username
+    UserAccount:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        account_type:
+          allOf:
+          - $ref: '#/components/schemas/AccountTypeEnum'
+          title: Тип аккаунта
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,8})?$
+          title: Баланс
+        currency:
+          type: string
+          readOnly: true
+          title: Валюта
+      required:
+      - account_type
+      - currency
+      - id
+    UserCryptoAddress:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        address:
+          type: string
+          maxLength: 64
+        token:
+          type: string
+          maxLength: 5
+      required:
+      - id
+    UserEmailRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        referral_code:
+          type: string
+          writeOnly: true
+        first_name:
+          type: string
+          writeOnly: true
+        last_name:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    UserProductPurchase:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        product:
+          type: string
+          readOnly: true
+        invoice:
+          type: string
+          readOnly: true
+        paid_for:
+          type: boolean
+          title: Оплачено
+        expires_at:
+          type: string
+          format: date
+          nullable: true
+        is_configured:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - invoice
+      - is_configured
+      - product
+      - user
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    WithdrawalRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+        address:
+          type: string
+        token:
+          type: string
+        secret_code:
+          type: integer
+      required:
+      - address
+      - amount
+      - secret_code
+      - token
+    WithdrawalResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        user_account:
+          allOf:
+          - $ref: '#/components/schemas/UserAccount'
+          readOnly: true
+        cryptoaddress:
+          allOf:
+          - $ref: '#/components/schemas/UserCryptoAddress'
+          readOnly: true
+        token:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,12}(?:\.\d{0,8})?$
+          title: Сумма
+        status:
+          allOf:
+          - $ref: '#/components/schemas/WithdrawalResponseStatusEnum'
+          title: Статус
+        allowed_for_withdrawal:
+          type: boolean
+          title: Разрешено к выводу
+          description: Устанавливается менеджером. Если включено, заявка может быть
+            обработана.
+        is_paid_out:
+          type: boolean
+          title: Выплата произведена
+          description: Устанавливается, если выплата по заявке уже произведена.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Создано
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Обновлено
+      required:
+      - amount
+      - created_at
+      - cryptoaddress
+      - id
+      - token
+      - updated_at
+      - user
+      - user_account
+    WithdrawalResponseStatusEnum:
+      enum:
+      - Pending
+      - Approved
+      - Rejected
+      type: string
+      description: |-
+        * `Pending` - В ожидании
+        * `Approved` - Одобрено
+        * `Rejected` - Отклонено
+  securitySchemes:
+    jwtAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "JWT"
