@@ -110,7 +110,7 @@ export const useTicketsStore = defineStore('tickets', {
                 const body: any = {
                     subject: payload.subject,
                     message: payload.message,
-                    ticket_type_id: Number(payload.ticket_type_id),
+                    ticket_type: Number(payload.ticket_type_id),
                     client: tgWebAppStore.user.id,
                     product: payload.product_id || null,
                 };
