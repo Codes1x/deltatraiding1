@@ -70,6 +70,7 @@ export const useTicketsStore = defineStore('tickets', {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
                 if (!accessToken || !tgWebAppStore.user?.id) {
+                    console.error("stores/tickets.ts - newTicket error: Access token or User ID is missing");
                     return { success: false, error: "Access token or User ID is missing" };
                 }
 
@@ -82,11 +83,12 @@ export const useTicketsStore = defineStore('tickets', {
                 const body = {
                     subject: payload.subject,
                     message: payload.message,
-                    ticket_type_id: String(payload.ticket_type_id),
+                    ticket_type_id: Number(payload.ticket_type_id),
                     client: tgWebAppStore.user.id,
+                    product: null,
                 };
 
-                console.log('stores/tickets.ts - newTicket - JSON body:', body);
+                console.log('stores/tickets.ts - newTicket - JSON body:', JSON.stringify(body, null, 2));
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
 
                 const response: any = await $fetch(url, {
