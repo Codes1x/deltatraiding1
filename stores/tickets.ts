@@ -112,11 +112,8 @@ export const useTicketsStore = defineStore('tickets', {
                     message: payload.message,
                     ticket_type_id: Number(payload.ticket_type_id),
                     client: tgWebAppStore.user.id,
+                    product: payload.product_id || null,
                 };
-
-                if (payload.product_id) {
-                    body.product = payload.product_id;
-                }
 
                 console.log('stores/tickets.ts - newTicket - JSON body:', JSON.stringify(body, null, 2));
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
