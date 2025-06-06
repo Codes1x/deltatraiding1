@@ -69,8 +69,8 @@ export const useTicketsStore = defineStore('tickets', {
             try {
                 const tgWebAppStore = useTgWebAppStore()
                 const accessToken = tgWebAppStore.accessToken
-                if (!accessToken) {
-                    return { success: false, error: "Access token is missing" };
+                if (!accessToken || !tgWebAppStore.user?.id) {
+                    return { success: false, error: "Access token or User ID is missing" };
                 }
 
                 const headers: Record<string, string> = {
@@ -83,6 +83,7 @@ export const useTicketsStore = defineStore('tickets', {
                     subject: payload.subject,
                     message: payload.message,
                     ticket_type_id: String(payload.ticket_type_id),
+                    client: tgWebAppStore.user.id,
                 };
 
                 console.log('stores/tickets.ts - newTicket - JSON body:', body);
