@@ -35,13 +35,18 @@ export interface IMessagesInfo {
     id: number,
     content: string,
     is_read: boolean,
-    date_time_read: Date,
+    date_time_read: Date | null,
     created_at: Date,
-    date_time_response: Date,
+    date_time_response: Date | null,
     duration_response: any,
     dialog: string,
     sender: number,
-    reply_to: number
+    reply_to: number | null
+}
+
+export interface IUserProductPurchase {
+    id: number;
+    product: string;
 }
 
 export interface INewTicketResponse {
@@ -49,5 +54,3 @@ export interface INewTicketResponse {
     subject: string,
     client: number
 }
-
-export interface 

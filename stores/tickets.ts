@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import type { INewTicketResponse, ITicket, ITicketType, IMessagesInfo } from '~/types/tickets';
+import type { INewTicketResponse, ITicket, ITicketType, IMessagesInfo, IUserProductPurchase } from '~/types/tickets';
 
 export const useTicketsStore = defineStore('tickets', {
     state: () => ({
         ticketsTypes: [] as ITicketType[],
         tickets: [] as ITicket[],
-        activeTicket: {} as ITicket
+        activeTicket: {} as ITicket,
+        nonConfiguredSystems: [] as IUserProductPurchase[],
     }),
     actions: {
         async fetchTicketsType() {
@@ -30,6 +31,31 @@ export const useTicketsStore = defineStore('tickets', {
             } catch (error) {
                 this.ticketsTypes = []
                 console.error('fetchTicketsType ', error)
+                return error
+            }
+        },
+        async fetchNonConfiguredSystems() {
+            try {
+                const tgWebAppStore = useTgWebAppStore()
+                const accessToken = tgWebAppStore.accessToken
+                if (!accessToken) {
+                    throw new Error("Access token is missing");
+                }
+                const headers: Record<string, string> = {
+                    Authorization: `JWT ${accessToken}`,
+                }
+
+                const url = `https://stage.api.delta-trade.app/api/v1/purchases/non_configured_trading_systems/`
+                const response = (await $fetch(url, {
+                    method: 'GET',
+                    headers,
+                })) as { results: IUserProductPurchase[] } // Ожидаем объект с ключом results
+                this.nonConfiguredSystems = response.results || []
+
+                return response.results
+            } catch (error) {
+                this.nonConfiguredSystems = []
+                console.error('fetchNonConfiguredSystems ', error)
                 return error
             }
         },
@@ -63,6 +89,7 @@ export const useTicketsStore = defineStore('tickets', {
             message: string;
             ticket_type_id: string;
             attachment?: File | null;
+            product_id?: number | null;
         }) {
             console.log('stores/tickets.ts - newTicket payload:', payload);
 
@@ -80,13 +107,16 @@ export const useTicketsStore = defineStore('tickets', {
                     'Accept': 'application/json',
                 };
 
-                const body = {
+                const body: any = {
                     subject: payload.subject,
                     message: payload.message,
                     ticket_type_id: Number(payload.ticket_type_id),
                     client: tgWebAppStore.user.id,
-                    product: null,
                 };
+
+                if (payload.product_id) {
+                    body.product = payload.product_id;
+                }
 
                 console.log('stores/tickets.ts - newTicket - JSON body:', JSON.stringify(body, null, 2));
                 const url = `https://stage.api.delta-trade.app/api/v1/support/tickets/`
@@ -216,6 +246,12 @@ export const useTicketsStore = defineStore('tickets', {
                 return state.activeTicket
             }
             return null
+        },
+        getNonConfiguredSystems(state) {
+            if (state.nonConfiguredSystems.length > 0) {
+                return state.nonConfiguredSystems
+            }
+            return []
         }
     },
 })

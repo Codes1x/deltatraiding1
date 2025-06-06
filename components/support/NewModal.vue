@@ -1,54 +1,84 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, defineEmits } from 'vue'
+import { ref, onMounted, onBeforeUnmount, defineEmits, computed } from 'vue'
 import { useTicketsStore } from '~/stores/tickets'
-import type { ITicketType } from '~/types/tickets'
+import type { ITicketType, IUserProductPurchase } from '~/types/tickets'
 
 interface IOption {
   label: string
-  value: string
+  value: any // Может быть строкой (id типа) или числом (id продукта)
 }
 
 const ticketsStore = useTicketsStore()
 const emit = defineEmits(['close'])
 
-const selectedItem = ref<IOption>()
-const dropdownItems = ref<IOption[]>([])
+const selectedTicketOption = ref<IOption>()
+const ticketTypes = ref<ITicketType[]>([])
+const ticketTypeDropdownItems = computed<IOption[]>(() =>
+  ticketTypes.value.map(item => ({
+    label: String(item.name),
+    value: String(item.id),
+  })),
+)
+
+const selectedProductOption = ref<IOption>()
+const products = computed(() => ticketsStore.getNonConfiguredSystems)
+const productDropdownItems = computed<IOption[]>(() =>
+  products.value.map(item => ({
+    label: String(item.product),
+    value: item.id,
+  })),
+)
+
+const selectedTicketType = computed<ITicketType | undefined>(() => {
+    if (!selectedTicketOption.value) return undefined
+    return ticketTypes.value.find(t => String(t.id) === selectedTicketOption.value!.value)
+})
+
+const isProductRequired = computed<boolean>(() => {
+    return selectedTicketType.value?.additional_fields === 1;
+})
 
 const ticketMessage = ref('')
 const isLoading = ref(false)
 
 const sendTicketMessage = async () => {
-  if (ticketMessage.value.length >= 3 && selectedItem.value) {
+    if (ticketMessage.value.length < 3) {
+        return alert('Сообщение должно содержать не менее 3 символов.')
+    }
+    if (!selectedTicketOption.value) {
+        return alert('Пожалуйста, выберите тип тикета.')
+    }
+    if (isProductRequired.value && !selectedProductOption.value) {
+        return alert('Пожалуйста, выберите продукт.')
+    }
+
     isLoading.value = true
     try {
-      const payload = {
-        message: ticketMessage.value,
-        ticket_type_id: selectedItem.value.value,
-        subject: selectedItem.value.label,
-      }
-      console.log('NewModal.vue - payload before sending:', JSON.stringify(payload, null, 2))
-      const result = await ticketsStore.newTicket(payload)
+        const payload: any = {
+            message: ticketMessage.value,
+            ticket_type_id: selectedTicketOption.value.value,
+            subject: selectedTicketOption.value.label,
+        }
+        if (isProductRequired.value && selectedProductOption.value) {
+            payload.product_id = selectedProductOption.value.value;
+        }
 
-      if (result.success) {
-        alert('Ticket created successfully!')
-        ticketMessage.value = ''
-        emit('close')
-      } else {
-        alert(`Error: ${result.error || 'Failed to create ticket'}`)
-      }
+        console.log('NewModal.vue - payload before sending:', JSON.stringify(payload, null, 2))
+        const result = await ticketsStore.newTicket(payload)
+
+        if (result.success) {
+            alert('Ticket created successfully!')
+            ticketMessage.value = ''
+            emit('close')
+        } else {
+            alert(`Error: ${result.error || 'Failed to create ticket'}`)
+        }
     } catch (error) {
-      console.error('sendTicketMessage error: ', error)
-      alert('An unexpected error occurred.')
+        console.error('sendTicketMessage error: ', error)
+        alert('An unexpected error occurred.')
     } finally {
-      isLoading.value = false
+        isLoading.value = false
     }
-  } else {
-    if (ticketMessage.value.length < 3) {
-      alert('Сообщение должно содержать не менее 3 символов.')
-    } else if (!selectedItem.value) {
-      alert('Пожалуйста, выберите тип тикета.')
-    }
-  }
 }
 /** Dropdown Items */
 const isDataLoaded = ref(false)
@@ -56,13 +86,15 @@ const fetchData = async () => {
   try {
     isDataLoaded.value = false
     const response = (await ticketsStore.fetchTicketsType()) as ITicketType[]
+    ticketTypes.value = response;
 
-    dropdownItems.value = response.map(item => ({
-      label: String(item.name), // Приводим к строке для надежности
-      value: String(item.id), // Приводим к числу для надежности
-    }))
+    if (ticketTypeDropdownItems.value.length > 0) {
+        selectedTicketOption.value = ticketTypeDropdownItems.value[0]
+    }
 
-    selectedItem.value = dropdownItems.value[0]
+    // Также загружаем системы, которые могут понадобиться
+    await ticketsStore.fetchNonConfiguredSystems();
+
   } catch (error) {
     console.error('fetchData ', error)
   } finally {
@@ -97,7 +129,8 @@ onBeforeUnmount(() => {
       <h2>{{ $t('Create ticket') }}</h2>
       <div class="deposit__form">
         <div v-if="isDataLoaded && !isLoading" class="support__items">
-          <CommonDropdown v-model="selectedItem" :items="dropdownItems" />
+          <CommonDropdown v-model="selectedTicketOption" :items="ticketTypeDropdownItems" />
+          <CommonDropdown v-if="isProductRequired" v-model="selectedProductOption" :items="productDropdownItems" placeholder="Select a product" />
         </div>
         <div v-else class="support__items">
           <CommonLoader :small="true" />
