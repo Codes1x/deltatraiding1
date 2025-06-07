@@ -53,17 +53,16 @@ const retryInitialization = async () => {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #000000; /* Устанавливаем фон на черный */
+  color: #ffffff; /* Оставляем цвет текста белым для контраста */
 }
 
 .app-loading {
-  background-color: #000000;
-  transition: opacity 0.3s ease-in-out;
+  /* Specific styles for loading state if needed */
 }
 
 .app-error {
-  background-color: rgba(255, 0, 0, 0.8);
+  background-color: rgba(255, 0, 0, 0.8); /* Example error state styling */
   color: white;
 }
 
